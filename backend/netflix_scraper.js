@@ -40,10 +40,16 @@ async function getImageLinks(url, outputFilePath) {
             state: 'visible'
         });
 
+        // Extract genre from the webpage
+        const genre = await page.evaluate(() => {
+            const genreElement = document.querySelector('.nm-collections-metadata-title'); // Selector for genre
+            return genreElement ? genreElement.textContent.trim() : 'Unknown Genre';
+        });
+
         // Extract links, image sources, and titles directly from the DOM
         const movieData = await page.evaluate(() => {
             const data = [];
-            document.querySelectorAll('a.nm-collections-title').forEach((movie) => {
+            document.querySelectorAll('a.nm-collections-title').forEach((movie, index) => {
                 const img = movie.querySelector('img.nm-collections-title-img'); // Image element
                 const href = movie.getAttribute('href'); // Movie link
                 
@@ -56,14 +62,14 @@ async function getImageLinks(url, outputFilePath) {
 
                 const imgSrc = img?.getAttribute('src'); // Image source
                 const fullLink = href ? (href.startsWith('http') ? href : `https://www.netflix.com${href}`) : null;
-                const id = href ? href.slice(-8) : null; // Extract last 8 digits from the link
+                const nid = href ? href.slice(-8) : null; // Extract last 8 digits from the link
 
-                if (imgSrc && fullLink && id) {
+                if (imgSrc && fullLink && nid) {
                     data.push({
+                        id: index + 1, // Serial number starting from 1
                         title: title,
                         image: imgSrc,
-                        link: fullLink,
-                        id: id
+                        nid: nid
                     });
                 }
             });
@@ -74,10 +80,13 @@ async function getImageLinks(url, outputFilePath) {
 
         await browser.close();
 
-        // Append the data to a file
-        fs.appendFileSync(outputFilePath, JSON.stringify(movieData, null, 2) + ',\n', 'utf-8');
+        // Append the genre and data to a file
+        const outputData = {
+            [genre]: movieData // Wrap movie data in an array under the genre key
+        };
+        fs.appendFileSync(outputFilePath, JSON.stringify(outputData, null, 2) + ',\n', 'utf-8');
         console.log(`Movie data appended to ${outputFilePath}`);
-        return movieData;
+        return outputData;
     } catch (error) {
         console.error('Error fetching the page:', error);
         return [];
@@ -85,4 +94,4 @@ async function getImageLinks(url, outputFilePath) {
 }
 
 // Example usage
-getImageLinks('https://www.netflix.com/in/browse/genre/43040', 'movie_data.json');
+getImageLinks('https://www.netflix.com/in/browse/genre/43040', 'movie_data.json');x
