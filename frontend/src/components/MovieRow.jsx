@@ -1,11 +1,12 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
+import { v4 as uuidv4 } from 'uuid';
 
 const MovieRow = ({ title, movies }) => {
   const navigate = useNavigate();
 
   const handleMovieClick = (movieId) => {
-    navigate(`/watch/${movieId}`);
+    navigate(`/watch/${movieId}?room=${uuidv4()}`);
   };
 
   return (

@@ -3,17 +3,17 @@ import path from "path";
 import {connectDB} from "./config/db.js";
 import dotenv from "dotenv";
 
-// import productRoutes from "./routes/product.route.js";
+import TimerRoutes from "./routes/timer.route.js";
 dotenv.config({path: "../.env"});
 
 const app = express();
 const PORT = Number(process.env.PORT) || 5000;
 
-const _dirname = path.resolve();
-
 app.use(express.json());
 
-// app.use("/api/products/", productRoutes);
+const _dirname = path.resolve();
+
+app.use("/api/timers", TimerRoutes);
 
 if(process.env.NODE_ENV ===  "production") {
     app.use(express.static(path.join(_dirname, "/dist")));

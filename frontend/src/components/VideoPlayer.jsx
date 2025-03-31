@@ -1,14 +1,15 @@
 import React, { useState, useEffect } from 'react';
-import { useParams } from 'react-router-dom';
+import { useParams, useSearchParams } from 'react-router-dom';
 import { v4 as uuidv4 } from 'uuid';
 import { Users, X, Send, ThumbsUp } from 'lucide-react';
 import { movies } from '../data/movies';
 
 const VideoPlayer = () => {
+  const [searchParams] = useSearchParams();
   const { movieId } = useParams();
   const [roomId, setRoomId] = useState(null);
   const [showModal, setShowModal] = useState(false);
-  const newRoomId = uuidv4();
+  const newRoomId = searchParams.get("room") || uuidv4();
   const [inviteLink, setInviteLink] = useState(newRoomId);
   const [comment, setComment] = useState('');
   const [comments, setComments] = useState([
@@ -74,7 +75,8 @@ const VideoPlayer = () => {
       setRoomId(roomParam);
     }
   }, []);
-
+  console.log(roomId)
+  
   return (
     <div className="video-player-container">
       <div className="video-section">
@@ -85,14 +87,12 @@ const VideoPlayer = () => {
 
         {/* Video player */}
         <div className="video-wrapper">
-        <div className="video-wrapper">
-            <button 
-              onClick={() => window.location.href = `https://www.netflix.com/watch/${movieId}`} 
-              className="redirect-btn"
-            >
-              Watch on Netflix
-            </button>
-          </div>
+          <iframe
+            src={`https://uflix.to/mPlayer?movieid=${movieId}&stream=stream1`}
+            title={movie?.title}
+            className="video-frame"
+            allowFullScreen
+          />
           <div className="video-controls">
             <button onClick={createRoom} className="create-room-btn">
               <Users size={20} />
