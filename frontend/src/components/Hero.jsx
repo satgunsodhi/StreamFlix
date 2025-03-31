@@ -11,15 +11,18 @@ const Hero = () => {
       }}
     >
       <div className="hero-content">
-        <h1 className="hero-title">Stranger Things</h1>
+        <h1 className="hero-title">Welcome to <span style={{ color: 'red' }}>STREAMFLIX</span></h1>
         <p className="hero-description">
-          When a young boy vanishes, a small town uncovers a mystery involving secret experiments, 
-          terrifying supernatural forces and one strange little girl.
+          Enjoy exploring our vast collection of content, from thrilling adventures to heartwarming stories. 
+          Sit back, relax, and start watching!
         </p>
         <div className="button-group">
-          <button className="button button-primary">
+          <button 
+            className="button button-primary"
+            onClick={() => window.location.href = '/watch/interstellar-2014'}
+          >
             <Play size={20} />
-            Play
+            Play Random
           </button>
           <button className="button button-secondary">
             <Info size={20} />
