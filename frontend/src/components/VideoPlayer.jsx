@@ -85,12 +85,14 @@ const VideoPlayer = () => {
 
         {/* Video player */}
         <div className="video-wrapper">
-          <iframe
-            src="https://www.netflix.com/watch/81011476"
-            title={movie?.title}
-            className="video-frame"
-            allowFullScreen
-          />
+        <div className="video-wrapper">
+            <button 
+              onClick={() => window.location.href = `https://www.netflix.com/watch/${movieId}`} 
+              className="redirect-btn"
+            >
+              Watch on Netflix
+            </button>
+          </div>
           <div className="video-controls">
             <button onClick={createRoom} className="create-room-btn">
               <Users size={20} />

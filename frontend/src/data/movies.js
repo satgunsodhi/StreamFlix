@@ -1,7 +1,7 @@
 export const movies = {
   trending: [
     {
-      id: 1,
+      id: 80077368,
       title: "Stranger Things",
       image: "https://images.unsplash.com/photo-1626814026160-2237a95fc5a0?w=800",
       description: "A group of kids uncover supernatural forces in their small town."
