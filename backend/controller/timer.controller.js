@@ -2,7 +2,7 @@ import Timer from "../models/timer.model.js";
 
 export const createTimer = async (req, res) => {
     const { name, time } = req.body; // Extract values directly
-    if (!name || !time) {
+    if (!name || time === undefined) { // Allow time to be 0
         return res.status(400).json({ success: false, message: "Please provide all fields" });
     }
 
@@ -58,4 +58,3 @@ export const updateTimer = async (req, res) => {
         res.status(500).json({ message: "Server error", error });
     }
 };
-
