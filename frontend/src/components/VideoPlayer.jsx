@@ -8,7 +8,8 @@ const VideoPlayer = () => {
   const { movieId } = useParams();
   const [roomId, setRoomId] = useState(null);
   const [showModal, setShowModal] = useState(false);
-  const [inviteLink, setInviteLink] = useState('');
+  const newRoomId = uuidv4();
+  const [inviteLink, setInviteLink] = useState(newRoomId);
   const [comment, setComment] = useState('');
   const [comments, setComments] = useState([
     {
@@ -31,7 +32,6 @@ const VideoPlayer = () => {
   const movie = allMovies.find(m => m.id === parseInt(movieId));
 
   const createRoom = () => {
-    const newRoomId = uuidv4();
     setRoomId(newRoomId);
     const link = `${window.location.origin}/watch/${movieId}?room=${newRoomId}`;
     setInviteLink(link);
@@ -86,7 +86,7 @@ const VideoPlayer = () => {
         {/* Video player */}
         <div className="video-wrapper">
           <iframe
-            src="https://www.youtube.com/embed/dQw4w9WgXcQ"
+            src="https://www.netflix.com/watch/81011476"
             title={movie?.title}
             className="video-frame"
             allowFullScreen
