@@ -27,5 +27,3 @@ app.listen(PORT, () => {
     connectDB();
     console.log("Server Started at http://localhost:" + PORT);
 })
-
-console.log("MONGO_URI:", process.env.MONGO_URI);
