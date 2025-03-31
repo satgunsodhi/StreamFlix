@@ -373,7 +373,7 @@ export const movies = {
       "lowercase_title": "babam-ve-oglum-2005"
   }
   ],
-  "for-you": [
+  action: [
     {
       "link": "https://m.media-amazon.com/images/m/mv5bmtg3mti5ntk0n15bml5banbnxkftztgwmju1mdm5mte@._v1_uy98_cr2,0,67,98_al_.jpg-1937",
       "lowercase_title": "la-grande-illusion-1937"
@@ -2655,7 +2655,7 @@ export const movies = {
       "lowercase_title": "the-peanut-butter-falcon-2019"
   }
     ],
-    throwback: [
+    comedy: [
       {
         "link": "https://m.media-amazon.com/images/m/mv5botjindezowytmtvjoc00zjlmlwe0ngmtzme1owvmzdq2owjhxkeyxkfqcgdeqxvyntizotk5odm@._v1_ux67_cr0,0,67,98_al_.jpg-2009",
         "lowercase_title": "inglourious-basterds-2009"
