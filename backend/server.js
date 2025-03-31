@@ -13,13 +13,13 @@ app.use(express.json());
 
 const _dirname = path.resolve();
 
-app.use("/api/timers", TimerRoutes); // Ensure this matches the route in the frontend
+app.use("/api/timers", TimerRoutes);
 
 if(process.env.NODE_ENV ===  "production") {
-    app.use(express.static(path.join(_dirname, "/dist")));
+    app.use(express.static(path.join(_dirname, "frontend", "/dist")));
 
     app.get("*", (req, res) => {
-        res.sendFile(path.resolve(_dirname, "dist", "index.html"));
+        res.sendFile(path.resolve(_dirname, "frontend", "dist", "index.html"));
     })
 }
 
