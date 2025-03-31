@@ -3,7 +3,7 @@ import dotenv from "dotenv";
 import path from "path";
 import {connectDB} from "./config/db.js";
 
-import productRoutes from "./routes/product.route.js";
+// import productRoutes from "./routes/product.route.js";
 
 dotenv.config();
 
@@ -28,3 +28,5 @@ app.listen(PORT, () => {
     connectDB();
     console.log("Server Started at http://localhost:" + PORT);
 })
+
+console.log("MONGO_URI:", process.env.MONGO_URI);
