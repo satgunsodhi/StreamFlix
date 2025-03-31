@@ -41,6 +41,11 @@ body {
   font-weight: bold;
 }
 
+.navbar-logo-link {
+  text-decoration: none;
+  color: inherit;
+}
+
 .navbar-right {
   display: flex;
   align-items: center;
@@ -155,7 +160,7 @@ body {
 }
 
 .movie-card {
-  flex: 0 0 300px;
+  flex: 0 0 150px;
   position: relative;
   transition: transform 0.3s ease;
   cursor: pointer;

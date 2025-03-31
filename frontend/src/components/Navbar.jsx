@@ -4,7 +4,9 @@ import { Search, User } from 'lucide-react';
 const Navbar = ({ searchQuery, onSearchChange }) => {
   return (
     <nav className="navbar">
-      <div className="navbar-logo">STREAMFLIX</div>
+      <div className="navbar-logo">
+        <a href="/" className="navbar-logo-link">STREAMFLIX</a>
+      </div>
       <div className="navbar-right">
         <div className="search-container">
           <Search size={20} className="search-icon" />
