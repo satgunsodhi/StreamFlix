@@ -13,7 +13,7 @@ app.use(express.json());
 
 const _dirname = path.resolve();
 
-app.use("/api/timers", TimerRoutes);
+app.use("/api/timers", TimerRoutes); // Ensure this matches the route in the frontend
 
 if(process.env.NODE_ENV ===  "production") {
     app.use(express.static(path.join(_dirname, "/dist")));

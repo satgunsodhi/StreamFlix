@@ -38,29 +38,24 @@ export const getTimer = async (req, res) => {
 };
 
 export const updateTimer = async (req, res) => {
-    const { name } = req.params;  // Extract name from the params
-    const { time } = req.body;    // Extract time from the request body
-
-    if (!time) {
-        return res.status(400).json({ success: false, message: "Please provide the time value to update" });
-    }
-
     try {
-        // Use findOneAndUpdate with $set to explicitly set the `time` field
+        const { name } = req.params;
+        const updatedData = req.body;
+
+        // Example: Update logic (replace with your database logic)
         const updatedTimer = await Timer.findOneAndUpdate(
-            { name },            // Search for the timer by name
-            { $set: { time } },  // Use $set to update the time field
-            { new: true }        // Return the updated document
+            { name },
+            updatedData,
+            { new: true }
         );
 
         if (!updatedTimer) {
-            return res.status(404).json({ success: false, message: "Timer not found" });
+            return res.status(404).json({ message: "Timer not found" });
         }
 
-        res.status(200).json({ success: true, data: updatedTimer });
+        res.status(200).json(updatedTimer);
     } catch (error) {
-        console.error("Error in updating timer:", error.message);
-        res.status(500).json({ success: false, message: "Server Error" });
+        res.status(500).json({ message: "Server error", error });
     }
 };
 
