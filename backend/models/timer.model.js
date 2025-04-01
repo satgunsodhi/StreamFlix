@@ -9,6 +9,14 @@ const timerSchema = new mongoose.Schema({
         type:Number,
         required: true,
     },
+    count: {
+        type: Number,
+        required: true,
+    },
+    limit: {
+        type: Number,
+        required: true,
+    }
 }, {
     timestamps: true // createdAt, updatedAt
 });
