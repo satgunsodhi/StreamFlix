@@ -154,6 +154,11 @@ body {
   scrollbar-width: none;
   justify-content: space-evenly;
   scroll-behavior: smooth;
+  scroll-snap-type: x mandatory;
+}
+
+.movie-row > * {
+  scroll-snap-align: start;
 }
 
 .movie-row::-webkit-scrollbar {
@@ -599,26 +604,25 @@ body {
   z-index: 1;
   font-size: 40px;
   width: 60px;
-  background: rgba(0, 0, 0, 0.7);
   border: none;
   color: var(--netflix-white);
   display: flex;
   align-items: center;
   justify-content: center;
   cursor: pointer;
-  transition: transform 0.3s ease;
+  transition: none;
 }
 
 .scroll-button:hover {
-  transform: scale(1.1);
+  transform: none;
 }
 
 .scroll-button.left {
   left: 0;
-  background: linear-gradient(to right, rgba(0, 0, 0, 0.7), transparent);
+  background: radial-gradient(circle at left, rgba(0, 0, 0, 0.5), transparent);
 }
 
 .scroll-button.right {
   right: 0;
-  background: linear-gradient(to left, rgba(0, 0, 0, 0.7), transparent);
+  background: radial-gradient(circle at right, rgba(0, 0, 0, 0.5), transparent);
 }
