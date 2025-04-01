@@ -150,9 +150,10 @@ body {
 .movie-row {
   display: flex;
   overflow-x: auto;
-  gap: 15px;
   padding: 20px 0;
   scrollbar-width: none;
+  justify-content: space-evenly;
+  scroll-behavior: smooth;
 }
 
 .movie-row::-webkit-scrollbar {
@@ -160,7 +161,7 @@ body {
 }
 
 .movie-card {
-  flex: 0 0 150px;
+  flex: 0 0 164px;
   position: relative;
   transition: transform 0.3s ease;
   cursor: pointer;
@@ -173,7 +174,7 @@ body {
 
 .movie-image {
   width: 100%;
-  height: 169px;
+  height: 223px;
   object-fit: cover;
   border-radius: 4px;
 }
@@ -575,4 +576,49 @@ body {
   .comment-submit-btn {
     width: 100%;
   }
+}
+
+.styled-button {
+  background-color: transparent;
+  border: none;
+  width: auto;
+  height: auto;
+  cursor: pointer;
+}
+
+.movie-row-container {
+  display: inline block;
+  align-items: center;
+  position: relative;
+}
+
+.scroll-button {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  z-index: 1;
+  font-size: 40px;
+  width: 60px;
+  background: rgba(0, 0, 0, 0.7);
+  border: none;
+  color: var(--netflix-white);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: transform 0.3s ease;
+}
+
+.scroll-button:hover {
+  transform: scale(1.1);
+}
+
+.scroll-button.left {
+  left: 0;
+  background: linear-gradient(to right, rgba(0, 0, 0, 0.7), transparent);
+}
+
+.scroll-button.right {
+  right: 0;
+  background: linear-gradient(to left, rgba(0, 0, 0, 0.7), transparent);
 }
