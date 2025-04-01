@@ -1,7 +1,21 @@
 import React from 'react';
 import { Play, Info } from 'lucide-react';
+import { movies } from '../data/movies';
+
 
 const Hero = () => {
+
+  const getRandomMovie = () => {
+    const categories = Object.keys(movies);
+    const randomCategory = categories[Math.floor(Math.random() * categories.length)];
+    const movieList = movies[randomCategory];
+  
+    if (!movieList || movieList.length === 0) return null;
+  
+    const randomMovie = movieList[Math.floor(Math.random() * movieList.length)];
+    return randomMovie;
+  };
+
   return (
     <div 
       className="hero" 
@@ -19,7 +33,7 @@ const Hero = () => {
         <div className="button-group">
           <button 
             className="button button-primary"
-            onClick={() => window.location.href = '/watch/interstellar-2014'}
+            onClick={() => window.location.href = `/watch/${getRandomMovie().id}`}
           >
             <Play size={20} />
             Play Random

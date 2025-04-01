@@ -267,6 +267,7 @@ body {
   background: var(--netflix-red);
   color: var(--netflix-white);
   transition: background-color 0.3s ease;
+  font-size: 1em;
 }
 
 .create-room-btn:hover {
