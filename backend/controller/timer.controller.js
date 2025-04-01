@@ -1,8 +1,8 @@
 import Timer from "../models/timer.model.js";
 
 export const createTimer = async (req, res) => {
-    const { name, time } = req.body; // Extract values directly
-    if (!name || time === undefined) { // Allow time to be 0
+    const { name, time, count, limit } = req.body; // Extract values directly
+    if (!name || time < 0) {
         return res.status(400).json({ success: false, message: "Please provide all fields" });
     }
 
@@ -13,7 +13,7 @@ export const createTimer = async (req, res) => {
             return res.status(400).json({ success: false, message: "Timer with this name already exists" });
         }
 
-        const newTimer = new Timer({ name, time });
+        const newTimer = new Timer({ name, time, count, limit });
         await newTimer.save();
         res.status(201).json({ success: true, data: newTimer });
     } catch (error) {

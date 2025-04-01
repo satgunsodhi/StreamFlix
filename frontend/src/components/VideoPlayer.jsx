@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useSearchParams } from 'react-router-dom';
 import { v4 as uuidv4 } from 'uuid';
-import { Users, X, Send, ThumbsUp } from 'lucide-react';
+import { Users, X, Send, ThumbsUp, User } from 'lucide-react';
 import { movies } from '../data/movies';
 import axios from "axios";
 
@@ -13,6 +13,7 @@ const VideoPlayer = () => {
   const [isHost, setIsHost] = useState(!searchParams.get("room")); // If no room param, you're the host
   const [showModal, setShowModal] = useState(false);
   const [inviteLink, setInviteLink] = useState('');
+  const [UserNo, setUserNo] = useState(null);
   const [comment, setComment] = useState('');
   const [comments, setComments] = useState([
     {
@@ -30,26 +31,13 @@ const VideoPlayer = () => {
       timestamp: '1 hour ago'
     }
   ]);
+
   const [notification, setNotification] = useState(null);
   const [currentPlayerTime, setCurrentPlayerTime] = useState(0);
 
   const allMovies = [...movies.trending, ...movies.action, ...movies.comedy];
   const movie = allMovies.find(m => m.id === movieId);
 
-  // Create a room timer on the server
-  const createRoomTimer = async (roomId) => {
-    try {
-      const response = await axios.post("/api/timers/", {
-        name: roomId, 
-        time: 0 
-      });
-      console.log("Room timer created:", response.data);
-    } catch (error) {
-      console.error("Error creating room timer:", error.response?.data || error.message);
-    }
-  };
-
-  // Create and share a room
   const createRoom = async () => {
     if (isHost) {
       const link = `${window.location.origin}/watch/${movieId}?room=${roomId}`;
@@ -63,36 +51,71 @@ const VideoPlayer = () => {
     }
   };
 
-  const updateServerTime = async (currentTime) => {
-    if (!isHost || !roomId) return;
-    
+  const createRoomTimer = async (roomId) => {
     try {
-      await axios.put(`/api/timers/${roomId}`, { time: currentTime });
-      console.log("Timer updated for room:", roomId, "with time:", currentTime);
+      const response = await axios.post("/api/timers/", {
+        name: roomId,
+        time: 0,
+        count: 1,
+        limit: 5
+      });
+      console.log("Room timer created:", response.data);
     } catch (error) {
-      console.error("Error updating timer:", error.response?.data || error.message);
+      console.error("Error creating room timer:", error.response?.data || error.message);
     }
   };
 
   const requestCurrenttime = async () => {
-    const iframe = document.querySelector('div > iframe');
-    iframe.onload = function() {
-      const iframeDocument = iframe.contentWindow.document;
-      const video = iframeDocument.querySelector('video');
-    };
+    const parentIframe = document.getElementById("video-player"); // Replace with the actual ID of the parent iframe
 
-    currentTime = video.currentTime;
+    // Ensure the parent iframe has loaded before accessing its content
+    parentIframe.onload = function () {
+        const parentDocument = parentIframe.contentDocument || parentIframe.contentWindow.document;
+        const nestedIframe = parentDocument.getElementById("ve-iframe"); // Now accessing the inner iframe
+    
+        console.log("Nested iframe:", nestedIframe);
+    };
   }
 
+  const configureUser = async () => {
+    try {
+      // Fetch current data
+      const response = await axios.get(`/api/timers/${roomId}`);
+      let countUser = response.data.data.count;
+      console.log("Count Fetched:", countUser);
+
+      if(countUser >= 5) {
+        kickUser();
+      }
+      const updatedResponse = await axios.put(`/api/timers/${roomId}`, { count: (countUser + 1) });
+  
+      // Log the updated count from the server response
+      const updatedCount = updatedResponse.data.count; // Assuming the updated count is in response.data.data.count
+      console.log("Count updated for room:", roomId, "with count:", updatedCount);
+  
+      // Update the state with the new count after server confirmation
+      setUserNo(updatedCount);
+  
+      // Optionally log the new state
+      console.log("Updated User No.", updatedCount);
+    } catch (error) {
+      console.error("Error updating room timer:", error.response?.data || error.message);
+    }
+  };
+  
+  const kickUser = async () => {
+    setRoomId(null);
+    setIsHost(true);
+    setUserNo(1);
+  }
   const syncWithServerTime = async () => {
     if (!roomId) return;
-    
     console.log("Syncing with server time, isHost:", isHost);
     try {
       const response = await axios.get(`/api/timers/${roomId}`);
-      const serverTime = response.data.time || 2;
+      const serverTime = response.data.time;
       console.log("Server time:", serverTime, "Current player time:", currentPlayerTime);
-      
+
       // Only update if there's a significant difference to avoid constant small adjustments
       if (Math.abs(serverTime - currentPlayerTime) > 10) {
         console.log("Significant time difference detected, updating player time");
@@ -103,10 +126,20 @@ const VideoPlayer = () => {
     }
   };
 
-  // Add a direct timer update function that doesn't depend on iframe messages
+  const updateServerTime = async (currentTime) => {
+    if (!isHost || !roomId) return;
+
+    try {
+      await axios.put(`/api/timers/${roomId}`, { time: currentTime });
+      console.log("Timer updated for room:", roomId, "with time:", currentTime);
+    } catch (error) {
+      console.error("Error updating timer:", error.response?.data || error.message);
+    }
+  };
+
   const updateTimerDirectly = async () => {
     if (!isHost || !roomId) return;
-    
+
     try {
       // Get the current tracked time and update server
       console.log("Updating server with current tracked time:", currentPlayerTime);
@@ -115,161 +148,6 @@ const VideoPlayer = () => {
       console.error("Error in direct timer update:", error);
     }
   };
-
-  // Timer intervals for host and client
-  useEffect(() => {
-    let hostTimerInterval;
-    let syncTimerInterval;
-
-    if (isHost) {
-      console.log("Setting up host timer intervals");
-      hostTimerInterval = setInterval(() => {
-        console.log("Host requesting current time");  
-        
-        setTimeout(() => {
-          updateServerTime(currentPlayerTime);
-        }, 1000);
-      }, 5000);
-    } else {
-      console.log("Setting up client sync intervals");
-      // Non-host periodically syncs with server time
-      syncTimerInterval = setInterval(() => {
-        console.log("Client syncing with server time");
-        syncWithServerTime();
-      }, 5000);
-    }
-
-    // Cleanup function
-    return () => {
-      if (hostTimerInterval) clearInterval(hostTimerInterval);
-      if (syncTimerInterval) clearInterval(syncTimerInterval);
-      console.log("Cleared timer intervals");
-    };
-  }, [isHost, roomId]); // Remove currentPlayerTime from dependencies
-
-  // Add a useEffect to periodically update the timer directly
-  // This serves as a fallback mechanism
-  useEffect(() => {
-    let directUpdateInterval;
-    
-    if (isHost) {
-      directUpdateInterval = setInterval(() => {
-        updateTimerDirectly();
-      }, 10000); // Every 10 seconds as a fallback
-    }
-    
-    return () => {
-      if (directUpdateInterval) clearInterval(directUpdateInterval);
-    };
-  }, [isHost, roomId]);
-
-  // Listen for messages from iframe with enhanced error handling
-  useEffect(() => {
-    const handleMessage = (event) => {
-      // Log all incoming messages for debugging
-      console.log("Received message:", event.data, "from origin:", event.origin);
-      
-      // Accept messages from the iframe domain or same origin
-      if (event.origin !== "https://uflix.to" && event.origin !== window.location.origin) {
-        console.warn("Ignored message from unknown origin:", event.origin);
-        return;
-      }
-
-      try {
-        // Handle time update from iframe
-        if (event.data && event.data.action === 'timeUpdate') {
-          const newTime = parseFloat(event.data.time);
-          console.log("Received timeUpdate:", newTime);
-          
-          if (!isNaN(newTime)) {
-            setCurrentPlayerTime(newTime);
-            
-            // If host, update the server with the new time
-            if (isHost) {
-              updateServerTime(newTime);
-            }
-          } else {
-            console.warn("Received invalid time value:", event.data.time);
-          }
-        }
-        
-        // Handle getCurrentTime response
-        if (event.data && event.data.action === 'currentTimeResponse') {
-          const reportedTime = parseFloat(event.data.time);
-          console.log("Received currentTimeResponse:", reportedTime);
-          
-          if (!isNaN(reportedTime)) {
-            setCurrentPlayerTime(reportedTime);
-            
-            // If host, update the server
-            if (isHost) {
-              updateServerTime(reportedTime);
-            }
-          } else {
-            console.warn("Received invalid currentTimeResponse:", event.data.time);
-          }
-        }
-      } catch (error) {
-        console.error("Error processing message:", error);
-      }
-    };
-
-    window.addEventListener('message', handleMessage);
-    return () => window.removeEventListener('message', handleMessage);
-  }, [isHost, roomId]);
-
-  // Add iframe load event to initialize communication
-  useEffect(() => {
-    const iframe = document.querySelector('#video-player');
-    
-    const handleIframeLoad = () => {
-      console.log("Iframe loaded, initializing communication");
-      
-      // Send an initial message to establish communication
-      setTimeout(() => {
-        
-        // For non-hosts, immediately sync with server time
-        if (!isHost) {
-          syncWithServerTime();
-        }
-      }, 1000); // Give iframe time to fully initialize
-    };
-    
-    if (iframe) {
-      iframe.addEventListener('load', handleIframeLoad);
-      return () => iframe.removeEventListener('load', handleIframeLoad);
-    }
-  }, [roomId, isHost]);
-
-  // Initialize room and timers on component mount
-  useEffect(() => {
-    console.log("Component mounted, isHost:", isHost, "roomId:", roomId);
-    
-    // Set up invite link
-    const link = `${window.location.origin}/watch/${movieId}?room=${roomId}`;
-    setInviteLink(link);
-    
-    // Attempt initial sync/setup
-    if (isHost) {
-      createRoomTimer(roomId)
-        .then(() => console.log("Room timer created on mount"))
-        .catch(error => console.error("Failed to create room on mount:", error));
-    } else {
-      syncWithServerTime()
-        .then(() => console.log("Initial sync with server completed"))
-        .catch(error => console.error("Initial sync failed:", error));
-    }
-    
-    // Set up a one-time check to ensure room exists
-    setTimeout(() => {
-      axios.get(`/api/timers/${roomId}`)
-        .then(response => console.log("Room exists:", response.data))
-        .catch(error => {
-          console.error("Room doesn't exist, creating it:", error);
-          if (isHost) createRoomTimer(roomId);
-        });
-    }, 2000);
-  }, []);
 
   const copyInviteLink = () => {
     navigator.clipboard.writeText(inviteLink);
@@ -301,6 +179,126 @@ const VideoPlayer = () => {
     ));
   };
 
+  useEffect(() => {
+    let hostTimerInterval;
+    let syncTimerInterval;
+
+    if (isHost) {
+      console.log("Setting up host timer intervals");
+      hostTimerInterval = setInterval(() => {
+        console.log("Host requesting current time");
+
+        requestCurrenttime();
+        setTimeout(() => {
+          updateServerTime(currentPlayerTime);
+        }, 1000);
+      }, 5000);
+    } else {
+      console.log("Setting up client sync intervals");
+      syncTimerInterval = setInterval(() => {
+        console.log("Client syncing with server time");
+        syncWithServerTime();
+      }, 5000);
+    }
+
+    return () => {
+      if (hostTimerInterval) clearInterval(hostTimerInterval);
+      if (syncTimerInterval) clearInterval(syncTimerInterval);
+      console.log("Cleared timer intervals");
+    };
+  }, [isHost, roomId]);
+
+  useEffect(() => {
+    const handleMessage = (event) => {
+      console.log("Received message:", event.data, "from origin:", event.origin);
+
+      try {
+        if (event.data && event.data.action === 'timeUpdate') {
+          const newTime = parseFloat(event.data.time);
+          console.log("Received timeUpdate:", newTime);
+
+          if (!isNaN(newTime)) {
+            setCurrentPlayerTime(newTime);
+
+            if (isHost) {
+              updateServerTime(newTime);
+            }
+          } else {
+            console.warn("Received invalid time value:", event.data.time);
+          }
+        }
+
+        if (event.data && event.data.action === 'currentTimeResponse') {
+          const reportedTime = parseFloat(event.data.time);
+          console.log("Received currentTimeResponse:", reportedTime);
+
+          if (!isNaN(reportedTime)) {
+            setCurrentPlayerTime(reportedTime);
+
+            if (isHost) {
+              updateServerTime(reportedTime);
+            }
+          } else {
+            console.warn("Received invalid currentTimeResponse:", event.data.time);
+          }
+        }
+      } catch (error) {
+        console.error("Error processing message:", error);
+      }
+    };
+
+    window.addEventListener('message', handleMessage);
+    return () => window.removeEventListener('message', handleMessage);
+  }, [isHost, roomId]);
+
+
+  useEffect(() => {
+    const iframe = document.querySelector('#video-player');
+
+    const handleIframeLoad = () => {
+      console.log("Iframe loaded, initializing communication");
+      setTimeout(() => {
+        if (!isHost) {
+          syncWithServerTime();
+        }
+      }, 1000);
+    };
+
+    if (iframe) {
+      iframe.addEventListener('load', handleIframeLoad);
+      return () => iframe.removeEventListener('load', handleIframeLoad);
+    }
+  }, [roomId, isHost]);
+
+  useEffect(() => {
+    console.log("Component mounted, isHost:", isHost, "roomId:", roomId);
+
+    const link = `${window.location.origin}/watch/${movieId}?room=${roomId}`;
+    setInviteLink(link);
+
+    if (isHost) {
+      createRoomTimer(roomId)
+        .then(() => console.log("Room timer created on mount"))
+        .catch(error => console.error("Failed to create room on mount:", error));
+    } else {
+      syncWithServerTime()
+        .then(() => console.log("Initial sync with server completed"))
+        .catch(error => console.error("Initial sync failed:", error));
+    }
+
+    if(!UserNo) {
+      configureUser();
+    }
+    setTimeout(() => {
+      axios.get(`/api/timers/${roomId}`)
+        .then(response => console.log("Room exists:", response.data))
+        .catch(error => {
+          console.error("Room doesn't exist, creating it:", error);
+          if (isHost) createRoomTimer(roomId);
+        });
+    }, 2000);
+  }, []);
+
   return (
     <div className="video-player-container">
       {/* Notification */}
@@ -319,7 +317,7 @@ const VideoPlayer = () => {
         <div className="video-wrapper">
           <iframe
             id="video-player"
-            src={`http://uflix.to/mPlayer?movieid=${movieId}`}
+            src={`https://www.2embed.cc/embed/${movieId}`}
             title={movie?.title}
             className="video-frame"
             allowFullScreen
