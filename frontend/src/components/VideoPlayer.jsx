@@ -39,7 +39,7 @@ const VideoPlayer = () => {
   // Create a room timer on the server
   const createRoomTimer = async (roomId) => {
     try {
-      const response = await axios.post("/api/timers", { 
+      const response = await axios.post("/api/timers/", {
         name: roomId, 
         time: 0 
       });
@@ -63,38 +63,6 @@ const VideoPlayer = () => {
     }
   };
 
-  // Enhanced sendMessageToIframe function with retry and logging
-  const sendMessageToIframe = (message) => {
-    console.log("Sending message to iframe:", message);
-    
-    const iframe = document.querySelector('#video-player');
-    if (iframe && iframe.contentWindow) {
-      try {
-        iframe.contentWindow.postMessage(message, '*');
-      } catch (error) {
-        console.error("Error sending message to iframe:", error);
-        
-        // Retry once after a short delay
-        setTimeout(() => {
-          try {
-            console.log("Retrying message to iframe:", message);
-            iframe.contentWindow.postMessage(message, '*');
-          } catch (retryError) {
-            console.error("Retry failed:", retryError);
-          }
-        }, 500);
-      }
-    } else {
-      console.error("Iframe not found or contentWindow not available");
-    }
-  };
-
-  // Request current time from iframe
-  const requestCurrentTime = () => {
-    sendMessageToIframe({ action: 'getCurrentTime' });
-  };
-
-  // Update server with current time (for host)
   const updateServerTime = async (currentTime) => {
     if (!isHost || !roomId) return;
     
@@ -106,21 +74,29 @@ const VideoPlayer = () => {
     }
   };
 
-  // Get time from server and update iframe (for non-host)
+  const requestCurrenttime = async () => {
+    const iframe = document.querySelector('div > iframe');
+    iframe.onload = function() {
+      const iframeDocument = iframe.contentWindow.document;
+      const video = iframeDocument.querySelector('video');
+    };
+
+    currentTime = video.currentTime;
+  }
+
   const syncWithServerTime = async () => {
     if (!roomId) return;
     
     console.log("Syncing with server time, isHost:", isHost);
     try {
       const response = await axios.get(`/api/timers/${roomId}`);
-      const serverTime = response.data.time || 0;
+      const serverTime = response.data.time || 2;
       console.log("Server time:", serverTime, "Current player time:", currentPlayerTime);
       
       // Only update if there's a significant difference to avoid constant small adjustments
-      if (Math.abs(serverTime - currentPlayerTime) > 3) {
+      if (Math.abs(serverTime - currentPlayerTime) > 10) {
         console.log("Significant time difference detected, updating player time");
-        sendMessageToIframe({ action: 'setTime', time: serverTime });
-        setCurrentPlayerTime(serverTime);
+        video.currentTime = serverTime;
       }
     } catch (error) {
       console.error("Error fetching time:", error.response?.data || error.message);
@@ -145,16 +121,11 @@ const VideoPlayer = () => {
     let hostTimerInterval;
     let syncTimerInterval;
 
-    // Initialize timers based on host status
     if (isHost) {
       console.log("Setting up host timer intervals");
-      // Host periodically updates the server with current time
       hostTimerInterval = setInterval(() => {
-        console.log("Host requesting current time");
-        requestCurrentTime();
+        console.log("Host requesting current time");  
         
-        // Backup: If we don't get a response from iframe, use our tracked time
-        // This ensures timer updates even if communication with iframe fails
         setTimeout(() => {
           updateServerTime(currentPlayerTime);
         }, 1000);
@@ -256,7 +227,6 @@ const VideoPlayer = () => {
       
       // Send an initial message to establish communication
       setTimeout(() => {
-        sendMessageToIframe({ action: 'init', roomId });
         
         // For non-hosts, immediately sync with server time
         if (!isHost) {
@@ -349,13 +319,13 @@ const VideoPlayer = () => {
         <div className="video-wrapper">
           <iframe
             id="video-player"
-            src={`https://uflix.to/mPlayer?movieid=${movieId}`}
+            src={`http://uflix.to/mPlayer?movieid=${movieId}`}
             title={movie?.title}
             className="video-frame"
             allowFullScreen
           />
           <div className="video-controls">
-            <button onClick={createRoom} className="create-room-btn">
+            <button onClick={() => { createRoom(); setShowModal(true); }} className="create-room-btn">
               <Users size={20} />
               Invite People
             </button>
