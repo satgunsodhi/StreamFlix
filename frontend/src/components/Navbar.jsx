@@ -3,7 +3,7 @@ import { Search, User } from 'lucide-react';
 
 const Navbar = ({ searchQuery, onSearchChange }) => {
   return (
-    <nav className="navbar">
+    <nav className="navbar" style={{ backgroundColor: 'rgba(0, 0, 0, 0.7)' }}>
       <div className="navbar-logo">
         <a href="/" className="navbar-logo-link">STREAMFLIX</a>
       </div>
