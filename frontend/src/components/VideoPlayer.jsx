@@ -100,6 +100,7 @@ const VideoPlayer = () => {
 
       if(countUser >= 5) {
         kickUser();
+        return; 
       }
       const updatedResponse = await axios.put(`/api/timers/${roomId}`, { count: (countUser + 1) });
   
@@ -120,6 +121,16 @@ const VideoPlayer = () => {
   const kickUser = async () => {
     setRoomId(null);
     setIsHost(true);
+    toast.error("Max User Limit Exceeded!", {
+      position: "bottom-right",
+      autoClose: 2500,
+      hideProgressBar: false,
+      closeOnClick: true,
+      pauseOnHover: true,
+      draggable: true,
+      progress: undefined,
+      theme: "dark",
+    });
     setUserNo(1);
   }
   const syncWithServerTime = async () => {
