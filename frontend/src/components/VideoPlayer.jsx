@@ -4,6 +4,7 @@ import { v4 as uuidv4 } from 'uuid';
 import { Users, X, Send, ThumbsUp, User } from 'lucide-react';
 import { movies } from '../data/movies';
 import axios from "axios";
+import { toast, ToastContainer } from "react-toastify";
 
 const VideoPlayer = () => {
   const [searchParams] = useSearchParams();
@@ -37,6 +38,19 @@ const VideoPlayer = () => {
 
   const allMovies = [...movies.trending, ...movies.action, ...movies.comedy];
   const movie = allMovies.find(m => m.id === movieId);
+
+  const notify = (message) => {
+    toast.success(message, {
+      position: "bottom-right",
+      autoClose: 2500,
+      hideProgressBar: false,
+      closeOnClick: true,
+      pauseOnHover: true,
+      draggable: true,
+      progress: undefined,
+      theme: "dark",
+    });
+  };
 
   const createRoom = async () => {
     if (isHost) {
@@ -151,7 +165,8 @@ const VideoPlayer = () => {
 
   const copyInviteLink = () => {
     navigator.clipboard.writeText(inviteLink);
-    setNotification('Invite link copied to clipboard!');
+    notify('Copied to clipboard!');
+    setShowModal(false);
     setTimeout(() => setNotification(null), 3000);
   };
 
@@ -421,6 +436,8 @@ const VideoPlayer = () => {
           </div>
         </div>
       )}
+
+      <ToastContainer className="ToastContainer"/>
     </div>
   );
 };
