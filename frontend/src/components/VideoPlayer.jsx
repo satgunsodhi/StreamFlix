@@ -98,7 +98,7 @@ const VideoPlayer = () => {
       let countUser = response.data.data.count;
       console.log("Count Fetched:", countUser);
 
-      if(countUser >= 5) {
+      if(countUser >= response.data.data.limit) {
         kickUser();
         return; 
       }
@@ -138,7 +138,7 @@ const VideoPlayer = () => {
     console.log("Syncing with server time, isHost:", isHost);
     try {
       const response = await axios.get(`/api/timers/${roomId}`);
-      const serverTime = response.data.time;
+      const serverTime = response.data.data.time;
       console.log("Server time:", serverTime, "Current player time:", currentPlayerTime);
 
       // Only update if there's a significant difference to avoid constant small adjustments
