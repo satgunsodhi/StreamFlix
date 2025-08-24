@@ -16,7 +16,7 @@ function App() {
   const filteredMovies = allMovies.filter(movie => 
     (movie.title && movie.title.toLowerCase().includes(searchQuery.toLowerCase())) ||
     (movie.description && movie.description.toLowerCase().includes(searchQuery.toLowerCase()))
-  );  
+  );
 
   const HomePage = () => (
     <>

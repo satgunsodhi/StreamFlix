@@ -79,16 +79,31 @@ const VideoPlayer = () => {
     }
   };
 
-  const requestCurrenttime = async () => {
-    const parentIframe = document.getElementById("video-player"); // Replace with the actual ID of the parent iframe
-
-    // Ensure the parent iframe has loaded before accessing its content
-    parentIframe.onload = function () {
-        const parentDocument = parentIframe.contentDocument || parentIframe.contentWindow.document;
-        const nestedIframe = parentDocument.getElementById("ve-iframe"); // Now accessing the inner iframe
-    
-        console.log("Nested iframe:", nestedIframe);
-    };
+  const requestCurrenttime = () => {
+    // Host: Try to access the video element inside the iframe and get its currentTime
+    const iframe = document.getElementById("video-player");
+    if (iframe && iframe.contentWindow) {
+      try {
+        // Try to access the video element inside the iframe (same-origin only)
+        const innerDoc = iframe.contentDocument || iframe.contentWindow.document;
+        // Try common selectors for video element
+        const videoEl = innerDoc.querySelector("video");
+        if (videoEl) {
+          const time = videoEl.currentTime;
+          setCurrentPlayerTime(time);
+          updateServerTime(time);
+          console.log("Host fetched video currentTime from iframe:", time);
+        } else {
+          // If not accessible, fallback to postMessage
+          iframe.contentWindow.postMessage({ action: "getCurrentTime" }, "*");
+          console.log("Host requested currentTime via postMessage");
+        }
+      } catch (err) {
+        // If cross-origin, fallback to postMessage
+        iframe.contentWindow.postMessage({ action: "getCurrentTime" }, "*");
+        console.log("Host requested currentTime via postMessage (cross-origin)");
+      }
+    }
   }
 
   const configureUser = async () => {
@@ -213,11 +228,8 @@ const VideoPlayer = () => {
       console.log("Setting up host timer intervals");
       hostTimerInterval = setInterval(() => {
         console.log("Host requesting current time");
-
         requestCurrenttime();
-        setTimeout(() => {
-          updateServerTime(currentPlayerTime);
-        }, 1000);
+        // Removed setTimeout, updateServerTime is now called inside requestCurrenttime after fetching time
       }, 5000);
     } else {
       console.log("Setting up client sync intervals");
