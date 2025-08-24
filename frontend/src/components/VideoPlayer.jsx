@@ -343,7 +343,7 @@ const VideoPlayer = () => {
         <div className="video-wrapper">
           <iframe
             id="video-player"
-            src={`https://uflix.to/mPlayer?movieid=${movieId}&stream=stream1`}
+            src={`https://uflix.to/mPlayer?movieid=${movieId}&stream=stream3`}
             title={movie?.title}
             className="video-frame"
             allowFullScreen
